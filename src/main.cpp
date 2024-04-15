@@ -9,7 +9,6 @@ const char* ssid_router = SECRET_WIFI_SSID;
 const char* password_router = SECRET_WIFI_PASSWORD;
 const char *server = SERVER_IP;
 
-
 const int ledPin1 = 22; 
 
 int interval = 0;
@@ -141,37 +140,41 @@ void setupWifi(){
 
 void setup() {
 
-  // webSocket.begin(server, 3000, "/ws");
-  // webSocket.onEvent(webSocketEvent);
 
-Serial.begin(9600); 
 
- setupWifi();
-
+  Serial.begin(9600); 
+  setupWifi();
   pinMode(ledPin1, OUTPUT);
 
+    // TODO: ADD WS SUPPORT IF NECESSARY
+  webSocket.begin(server, 3000, "/ws");
+  webSocket.onEvent(webSocketEvent);
+}
+
+void runWsLoop(){
+
+  while(true){
+    webSocket.loop();
+  }
 }
 
 void loop() {
+runWsLoop();
+
 tick++;
 Serial.println(tick);
-//webSocket.loop();
-//delay(interval * 1000);
-  // interval = 1;
+
+
   if(interval == 0){
-Serial.println("making GET request");
+  Serial.println("making GET request");
   client.get("/interval");
   int statusCode = client.responseStatusCode();
   String response = client.responseBody();
-  Serial.print("Response: ");
-  Serial.println(response);
-  Serial.print("INTERVAL::: ");
-  Serial.print(interval);
   interval = response.toInt();
 
   }
 
-if(tick >= interval * 50){
+  if(tick >= interval * 50){
     digitalWrite(ledPin1, LOW);
   }
 
@@ -179,10 +182,5 @@ if(tick >= interval * 50){
     tick = 0;
     digitalWrite(ledPin1, HIGH);
   }
-  // Serial.print("INTERVAL AFTER::: ");
-  // Serial.print(interval);
-  // digitalWrite(ledPin1, HIGH);
-  // delay(interval);
-  // digitalWrite(ledPin1, LOW);
 
 }
